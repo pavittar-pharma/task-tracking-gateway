@@ -14,24 +14,36 @@ export function EmployeeLogin() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const navigate = useNavigate();
   
   useEffect(() => {
     async function fetchEmployees() {
       try {
+        console.log("Fetching employees...");
         const { data, error } = await supabase
           .from('employees')
           .select('id, name, email, role')
           .order('name');
           
         if (error) {
-          throw error;
+          console.error('Supabase error:', error);
+          setError(`Failed to load employees: ${error.message}`);
+          toast.error('Failed to load employees. Please try again later.');
+          return;
         }
         
-        setEmployees(data || []);
+        console.log("Employees data:", data);
+        if (data && data.length > 0) {
+          setEmployees(data);
+        } else {
+          console.log("No employees found or empty data array");
+          setError("No employees found in the database");
+        }
       } catch (error) {
         console.error('Error fetching employees:', error);
+        setError(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
         toast.error('Failed to load employees. Please try again later.');
       } finally {
         setIsLoading(false);
@@ -58,6 +70,7 @@ export function EmployeeLogin() {
     setIsSubmitting(true);
     
     try {
+      console.log(`Attempting to login with employee ID: ${selectedEmployee.id}`);
       const loggedInUser = await auth.login(selectedEmployee.id, password);
       
       if (loggedInUser) {
@@ -82,6 +95,27 @@ export function EmployeeLogin() {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Loading employees...
           </p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="mx-auto w-full max-w-md space-y-8 glass-panel p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Error Loading Employees
+          </h1>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pharma-600 hover:bg-pharma-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pharma-500"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -143,35 +177,41 @@ export function EmployeeLogin() {
                 tabIndex={-1}
                 role="listbox"
               >
-                {employees.map((employee) => (
-                  <li
-                    key={employee.id}
-                    className={`relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-pharma-100 dark:hover:bg-gray-700 ${
-                      selectedEmployee?.id === employee.id ? "bg-pharma-50 dark:bg-gray-700" : ""
-                    }`}
-                    onClick={() => handleSelectEmployee(employee)}
-                    role="option"
-                    aria-selected={selectedEmployee?.id === employee.id}
-                  >
-                    <div className="flex items-center">
-                      <User className="h-5 w-5 text-gray-400 mr-2" aria-hidden="true" />
-                      <span className={`block truncate ${
-                        selectedEmployee?.id === employee.id ? "font-semibold" : "font-normal"
-                      }`}>
-                        {employee.name}
-                      </span>
-                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                        ({employee.role})
-                      </span>
-                    </div>
-                    
-                    {selectedEmployee?.id === employee.id && (
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-pharma-600 dark:text-pharma-400">
-                        <Check className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                    )}
+                {employees.length > 0 ? (
+                  employees.map((employee) => (
+                    <li
+                      key={employee.id}
+                      className={`relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-pharma-100 dark:hover:bg-gray-700 ${
+                        selectedEmployee?.id === employee.id ? "bg-pharma-50 dark:bg-gray-700" : ""
+                      }`}
+                      onClick={() => handleSelectEmployee(employee)}
+                      role="option"
+                      aria-selected={selectedEmployee?.id === employee.id}
+                    >
+                      <div className="flex items-center">
+                        <User className="h-5 w-5 text-gray-400 mr-2" aria-hidden="true" />
+                        <span className={`block truncate ${
+                          selectedEmployee?.id === employee.id ? "font-semibold" : "font-normal"
+                        }`}>
+                          {employee.name}
+                        </span>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                          ({employee.role})
+                        </span>
+                      </div>
+                      
+                      {selectedEmployee?.id === employee.id && (
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-pharma-600 dark:text-pharma-400">
+                          <Check className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                      )}
+                    </li>
+                  ))
+                ) : (
+                  <li className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-500 dark:text-gray-400">
+                    No employees found
                   </li>
-                ))}
+                )}
               </ul>
             )}
           </div>

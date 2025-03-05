@@ -10,16 +10,24 @@ export const auth = {
   // Login with employee ID and password
   login: async (employeeId: string, password: string): Promise<Employee | null> => {
     try {
+      console.log(`Attempting to login employee ID: ${employeeId}`);
+      
       const { data, error } = await supabase.functions.invoke('auth', {
         body: { employeeId, password }
       });
 
-      if (error || !data || !data.employee) {
-        console.error("Login error:", error || "No employee data returned");
+      if (error) {
+        console.error("Supabase function error:", error);
+        return null;
+      }
+
+      if (!data || !data.employee) {
+        console.error("No employee data returned");
         return null;
       }
 
       const employee = data.employee as Employee;
+      console.log("Login successful, employee data:", employee);
       
       // Store in session
       sessionStorage.setItem('currentUser', JSON.stringify(employee));
@@ -44,8 +52,13 @@ export const auth = {
     
     const userJson = sessionStorage.getItem('currentUser');
     if (userJson) {
-      currentUser = JSON.parse(userJson);
-      return currentUser;
+      try {
+        currentUser = JSON.parse(userJson);
+        return currentUser;
+      } catch (e) {
+        console.error("Error parsing user from session storage:", e);
+        return null;
+      }
     }
     
     return null;
