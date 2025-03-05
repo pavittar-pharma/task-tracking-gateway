@@ -202,7 +202,7 @@ export function EmployeeLogin() {
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Test accounts: admin/admin123, sales/sales123, manager/manager123
+                Test accounts: admin@pharmasync.com/admin123, sales@pharmasync.com/sales123, manager@pharmasync.com/manager123
               </p>
             </div>
           )}
