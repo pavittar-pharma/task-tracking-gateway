@@ -25,6 +25,17 @@ serve(async (req) => {
     const { employeeId, password } = await req.json();
     console.log(`Auth attempt for employee ID: ${employeeId}`);
 
+    // Check if the database has any employees
+    const { count, error: countError } = await supabaseClient
+      .from('employees')
+      .select('*', { count: 'exact', head: true });
+      
+    if (countError) {
+      console.error('Error checking employees count:', countError);
+    } else {
+      console.log(`Total employees in database: ${count || 0}`);
+    }
+
     // Get employee from database
     const { data: employee, error: employeeError } = await supabaseClient
       .from('employees')
