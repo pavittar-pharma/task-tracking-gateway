@@ -8,7 +8,7 @@ let currentUser: Employee | null = null;
 // Auth methods for our CRM
 export const auth = {
   // Login with employee ID and password
-  login: async (employeeId: number, password: string): Promise<Employee | null> => {
+  login: async (employeeId: string, password: string): Promise<Employee | null> => {
     try {
       const { data, error } = await supabase.functions.invoke('auth', {
         body: { employeeId, password }

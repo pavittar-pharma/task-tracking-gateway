@@ -29,14 +29,14 @@ const Dashboard = () => {
   
   // Calculate metrics
   const totalCustomers = customers.length;
-  const newCustomers = customers.filter(c => c.leadStatus === "new").length;
+  const newCustomers = customers.filter(c => c.lead_status === "new_lead").length;
   
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => o.status === "pending").length;
   
-  const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
   
-  const pendingTasks = tasks.filter(t => t.status === "pending").length;
+  const pendingTasks = tasks.filter(t => t.status === "in_progress").length;
   const completedTasks = tasks.filter(t => t.status === "completed").length;
   
   if (isLoading) {
@@ -131,7 +131,7 @@ const Dashboard = () => {
             </h2>
             <div className="space-y-3">
               {tasks
-                .filter(task => task.status === "pending")
+                .filter(task => task.status === "in_progress")
                 .slice(0, 4)
                 .map((task, i) => (
                   <div 
@@ -139,11 +139,11 @@ const Dashboard = () => {
                     className="p-3 border border-gray-100 dark:border-gray-700 rounded-lg"
                   >
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {task.title}
+                      {task.task_description}
                     </p>
                     <div className="flex justify-between items-center mt-1">
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                        Due: {new Date(task.due_date).toLocaleDateString()}
                       </p>
                       <div className={`text-xs px-2 py-1 rounded-full ${
                         task.priority === "high" 
