@@ -1,19 +1,45 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronDown, Lock, User } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { employees } from "@/lib/data";
 import { toast } from "sonner";
 import { Employee } from "@/lib/types";
+import { supabase } from "@/integrations/supabase/client";
 
 export function EmployeeLogin() {
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [password, setPassword] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    async function fetchEmployees() {
+      try {
+        const { data, error } = await supabase
+          .from('employees')
+          .select('id, name, email, role')
+          .order('name');
+          
+        if (error) {
+          throw error;
+        }
+        
+        setEmployees(data || []);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+        toast.error('Failed to load employees. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchEmployees();
+  }, []);
   
   const handleSelectEmployee = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -21,7 +47,7 @@ export function EmployeeLogin() {
     setPassword(""); // Reset password when changing employee
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedEmployee) {
@@ -31,9 +57,8 @@ export function EmployeeLogin() {
     
     setIsSubmitting(true);
     
-    // Simulate network delay for login
-    setTimeout(() => {
-      const loggedInUser = auth.login(selectedEmployee.id, password);
+    try {
+      const loggedInUser = await auth.login(selectedEmployee.id, password);
       
       if (loggedInUser) {
         toast.success(`Welcome, ${loggedInUser.name}!`);
@@ -42,10 +67,25 @@ export function EmployeeLogin() {
         toast.error("Invalid password. Please try again.");
         setPassword("");
       }
-      
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred during login. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
   };
+  
+  if (isLoading) {
+    return (
+      <div className="mx-auto w-full max-w-md space-y-8 glass-panel p-8">
+        <div className="text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Loading employees...
+          </p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="mx-auto w-full max-w-md space-y-8 glass-panel p-8">
@@ -161,6 +201,9 @@ export function EmployeeLogin() {
                   placeholder="Enter your password"
                 />
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Test accounts: admin/admin123, sales/sales123, manager/manager123
+              </p>
             </div>
           )}
         </div>

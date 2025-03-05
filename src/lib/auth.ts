@@ -1,28 +1,35 @@
 
 import { Employee, UserRole } from "./types";
-import { employees } from "./data";
+import { supabase } from "@/integrations/supabase/client";
 
 // Store the current user in session storage
 let currentUser: Employee | null = null;
 
-// Simple auth methods for our CRM
+// Auth methods for our CRM
 export const auth = {
   // Login with employee ID and password
-  login: (employeeId: number, password: string): Employee | null => {
-    const employee = employees.find(e => e.id === employeeId);
-    
-    if (employee && employee.password === password) {
-      // Update last active timestamp
-      employee.lastActive = new Date().toISOString();
+  login: async (employeeId: number, password: string): Promise<Employee | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('auth', {
+        body: { employeeId, password }
+      });
+
+      if (error || !data || !data.employee) {
+        console.error("Login error:", error || "No employee data returned");
+        return null;
+      }
+
+      const employee = data.employee as Employee;
       
       // Store in session
       sessionStorage.setItem('currentUser', JSON.stringify(employee));
       currentUser = employee;
       
       return employee;
+    } catch (error) {
+      console.error("Login exception:", error);
+      return null;
     }
-    
-    return null;
   },
   
   // Logout current user

@@ -1,34 +1,34 @@
 
 // User roles for our CRM
-export type UserRole = "admin" | "sales" | "manager";
+export type UserRole = "admin" | "sales_rep" | "manager";
 
 // User/Employee type
 export interface Employee {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: UserRole;
-  password: string;
+  password?: string;
   lastActive?: string;
-  created: string;
+  created?: string;
 }
 
 // Customer lead status
-export type LeadStatus = "new" | "in-progress" | "converted";
+export type LeadStatus = "new_lead" | "in_progress" | "converted";
 
 // Customer type
 export interface Customer {
-  id: number;
+  id: string;
   name: string;
   company?: string;
   email: string;
   phone: string;
   address?: string;
-  leadStatus: LeadStatus;
-  assignedTo: number; // Employee ID
+  lead_status: LeadStatus;
+  assigned_to: string; // Employee ID
   notes?: string;
-  created: string;
-  lastContact?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Order status
@@ -36,47 +36,59 @@ export type OrderStatus = "pending" | "dispatched" | "delivered";
 
 // Order type
 export interface Order {
-  id: number;
-  customerId: number;
-  products: OrderProduct[];
-  totalAmount: number;
+  id: string;
+  customer_id: string;
+  assigned_employee: string;
+  total_amount: number;
   status: OrderStatus;
-  created: string;
-  updated: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Product in order
-export interface OrderProduct {
-  productId: number;
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
   quantity: number;
   price: number;
+  created_at: string;
 }
 
 // Product/Inventory item
 export interface Product {
-  id: number;
-  name: string;
-  description: string;
+  id: string;
+  product_name: string;
+  stock_quantity: number;
   price: number;
-  stock: number;
-  lowStockThreshold: number;
+  low_stock_threshold: number;
+  low_stock_alert: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // Task priority levels
 export type TaskPriority = "low" | "medium" | "high";
 
 // Task status
-export type TaskStatus = "pending" | "in-progress" | "completed" | "missed";
+export type TaskStatus = "in_progress" | "completed" | "missed";
 
 // Task type
 export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  assignedTo: number; // Employee ID
+  id: string;
+  task_description: string;
+  assigned_to: string; // Employee ID
   priority: TaskPriority;
   status: TaskStatus;
-  dueDate: string;
-  created: string;
-  updated: string;
+  due_date: string;
+  created_at: string;
+  completed_at?: string;
+}
+
+// Activity log type
+export interface ActivityLog {
+  id: string;
+  employee_id: string;
+  action: string;
+  timestamp: string;
 }
