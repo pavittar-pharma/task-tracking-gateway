@@ -1,20 +1,9 @@
 
-import { EmployeeLogin } from "@/components/auth/EmployeeLogin";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { Container } from "@/components/ui/container";
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { auth } from "@/lib/auth";
+import { Link } from "react-router-dom";
 
 const Login = () => {
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    // If user is already logged in, redirect to dashboard
-    if (auth.isAuthenticated()) {
-      navigate("/dashboard");
-    }
-  }, [navigate]);
-  
   return (
     <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Container className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -27,7 +16,7 @@ const Login = () => {
         </div>
         
         <div className="mt-8">
-          <EmployeeLogin />
+          <LoginForm />
         </div>
         
         <div className="mt-8 text-center">

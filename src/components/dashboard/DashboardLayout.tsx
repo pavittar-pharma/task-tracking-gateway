@@ -13,7 +13,7 @@ import {
   Users, 
   X 
 } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { authService } from "@/lib/authService";
 import { Employee } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -45,22 +45,31 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check if user is authenticated
-    const currentUser = auth.getCurrentUser();
+    // Set up authentication state listener
+    const unsubscribe = authService.onAuthStateChange((employee) => {
+      setUser(employee);
+      
+      if (!employee) {
+        // Redirect to login if not authenticated
+        navigate("/login");
+      }
+    });
     
-    if (!currentUser) {
-      // Redirect to login if not authenticated
-      navigate("/login");
-      return;
-    }
+    // Initialize auth state from session storage
+    authService.initialize();
     
-    setUser(currentUser);
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [navigate]);
   
-  const handleLogout = () => {
-    auth.logout();
-    toast.success("You have been logged out");
-    navigate("/login");
+  const handleLogout = async () => {
+    const result = await authService.logout();
+    if (result.success) {
+      toast.success("You have been logged out");
+      navigate("/login");
+    } else {
+      toast.error(result.message || "Logout failed");
+    }
   };
   
   if (!user) return null;
@@ -100,7 +109,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
           <nav className="px-2 py-4 space-y-1 overflow-y-auto">
             {navigation
-              .filter(item => !item.requiresAdmin || auth.isAdmin())
+              .filter(item => !item.requiresAdmin || authService.isAdmin())
               .map((item) => (
                 <Link
                   key={item.name}
