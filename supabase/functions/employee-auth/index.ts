@@ -26,7 +26,7 @@ serve(async (req) => {
           status: 'error',
           error: "Server configuration error" 
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
 
@@ -39,15 +39,20 @@ serve(async (req) => {
     const { action, username, password, employeeId } = await req.json();
     console.log(`Auth action: ${action}`);
 
-    // For debug: check if employees table exists and has data
-    const { count, error: countError } = await supabaseClient
+    // Debug: check database connection and employees table
+    const { data: tableInfo, error: tableError } = await supabaseClient
       .from('employees')
-      .select('*', { count: 'exact', head: true });
-      
-    if (countError) {
-      console.error('Error checking employees count:', countError);
+      .select('*')
+      .limit(5);
+
+    if (tableError) {
+      console.error('Error querying employees table:', tableError);
     } else {
-      console.log(`Total employees in database: ${count || 0}`);
+      console.log(`Found ${tableInfo?.length || 0} employees in database`);
+      if (tableInfo && tableInfo.length > 0) {
+        // Log the structure of an employee record for debugging
+        console.log('Sample employee structure:', JSON.stringify(tableInfo[0], null, 2));
+      }
     }
 
     // Login action
@@ -69,7 +74,7 @@ serve(async (req) => {
             error: 'Error looking up employee', 
             details: employeeError.message
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
 

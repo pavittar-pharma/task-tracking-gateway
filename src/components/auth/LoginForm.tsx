@@ -12,30 +12,36 @@ export function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
     
     if (!username || !password) {
-      toast.error("Please enter both username and password");
+      setErrorMessage("Please enter both username and password");
       return;
     }
     
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting credentials:", { username, password });
       const result = await authService.login(username, password);
+      console.log("Login result:", result);
       
       if (result.status === 'success' && result.employee) {
         toast.success(`Welcome, ${result.employee.name}!`);
         navigate("/dashboard");
       } else {
-        toast.error(result.error || "Invalid credentials");
+        setErrorMessage(result.error || "Invalid credentials");
+        toast.error(result.error || "Login failed");
         setPassword("");
       }
     } catch (error) {
       console.error('Login error:', error);
+      setErrorMessage('An error occurred during login');
       toast.error('An error occurred during login');
     } finally {
       setIsSubmitting(false);
@@ -43,7 +49,7 @@ export function LoginForm() {
   };
   
   return (
-    <div className="mx-auto w-full max-w-md space-y-8 glass-panel p-8 bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700">
+    <div className="mx-auto w-full max-w-md space-y-6 glass-panel p-8 bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
           Sign in to Pavittar Pharma CRM
@@ -53,7 +59,13 @@ export function LoginForm() {
         </p>
       </div>
       
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      {errorMessage && (
+        <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-md">
+          {errorMessage}
+        </div>
+      )}
+      
+      <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
           {/* Username input */}
           <div className="space-y-1">
@@ -100,6 +112,13 @@ export function LoginForm() {
           {isSubmitting ? "Signing in..." : "Sign in"}
         </Button>
       </form>
+      
+      <div className="mt-4 text-center text-sm">
+        <div className="text-gray-500">Try these default credentials:</div>
+        <div className="text-gray-600 mt-1">
+          <code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">admin / admin123</code> or <code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">sales / sales123</code>
+        </div>
+      </div>
       
       <div className="mt-4 text-center text-sm text-gray-500">
         <p>A custom build by Rishul Chanana</p>

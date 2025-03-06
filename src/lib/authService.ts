@@ -110,7 +110,7 @@ export const authService = {
     return this.hasRole('admin');
   },
   
-  // New method for auth state changes
+  // Method for auth state changes
   onAuthStateChange(callback: AuthChangeListener): () => void {
     listeners.push(callback);
     
@@ -127,7 +127,7 @@ export const authService = {
     };
   },
   
-  // Initialize auth state from localStorage (no-op here, but satisfies the interface)
+  // Initialize auth state from localStorage
   initialize(): void {
     const employee = this.getCurrentEmployee();
     this._notifyListeners(employee);
