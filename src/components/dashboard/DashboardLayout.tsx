@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -13,8 +12,7 @@ import {
   Users, 
   X 
 } from "lucide-react";
-import { authService } from "@/lib/authService";
-import { Employee } from "@/lib/types";
+import { authService, Employee } from "@/lib/authService";
 import { toast } from "sonner";
 
 interface DashboardLayoutProps {
@@ -105,7 +103,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
         </div>
         
-        {/* Sidebar content */}
         <div className="flex flex-col h-[calc(100vh-4rem)] justify-between">
           <nav className="px-2 py-4 space-y-1 overflow-y-auto">
             {navigation
@@ -125,7 +122,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               ))}
           </nav>
           
-          {/* User profile section */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -148,9 +144,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
       
-      {/* Main content */}
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        {/* Top navigation */}
         <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 lg:px-8">
             <button
@@ -169,12 +163,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
         
-        {/* Page content */}
         <main className="flex-1 p-4 lg:p-8">
           {children}
         </main>
 
-        {/* Footer */}
         <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-4 px-4 lg:px-8">
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
             Pavittar Pharma CRM — A custom build by Rishul Chanana

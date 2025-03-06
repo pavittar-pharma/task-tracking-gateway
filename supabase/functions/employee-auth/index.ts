@@ -80,7 +80,7 @@ serve(async (req) => {
             status: 'error',
             error: 'Invalid username or password'
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
 
@@ -95,7 +95,7 @@ serve(async (req) => {
             status: 'error',
             error: 'Invalid username or password'
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
 
@@ -130,7 +130,7 @@ serve(async (req) => {
             role: employee.role
           }
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     } 
     // Logout action
@@ -156,7 +156,7 @@ serve(async (req) => {
           status: 'success',
           message: 'Logged out successfully'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
     else {
@@ -165,7 +165,7 @@ serve(async (req) => {
           status: 'error',
           error: 'Invalid action'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
   } catch (error) {
@@ -175,7 +175,7 @@ serve(async (req) => {
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   }
 });
