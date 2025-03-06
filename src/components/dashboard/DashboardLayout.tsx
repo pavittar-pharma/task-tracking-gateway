@@ -91,8 +91,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
           <Link to="/dashboard" className="flex items-center">
-            <span className="text-xl font-bold text-pharma-600 dark:text-pharma-400">
-              PharmaSync
+            <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+              Pavittar Pharma CRM
             </span>
           </Link>
           <button
@@ -114,10 +114,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 hover:bg-pharma-50 dark:hover:bg-gray-700 hover:text-pharma-600 dark:hover:text-pharma-400 transition-colors duration-200"
+                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-gray-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
                 >
                   <item.icon
-                    className="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-pharma-600 dark:group-hover:text-pharma-400"
+                    className="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
                     aria-hidden="true"
                   />
                   {item.name}
@@ -129,7 +129,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-pharma-600 dark:bg-pharma-700 flex items-center justify-center text-white">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center text-white">
                   {user.name.substring(0, 1)}
                 </div>
               </div>
@@ -173,6 +173,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 p-4 lg:p-8">
           {children}
         </main>
+
+        {/* Footer */}
+        <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-4 px-4 lg:px-8">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Pavittar Pharma CRM — A custom build by Rishul Chanana
+          </div>
+        </footer>
       </div>
     </div>
   );

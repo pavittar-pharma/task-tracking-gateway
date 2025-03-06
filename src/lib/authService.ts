@@ -18,13 +18,13 @@ const authChangeListeners: AuthChangeListener[] = [];
 
 // Auth service for our CRM
 export const authService = {
-  // Login with employee ID and password
-  login: async (employeeId: string, password: string): Promise<AuthResult> => {
+  // Login with username and password
+  login: async (username: string, password: string): Promise<AuthResult> => {
     try {
-      console.log(`Attempting to login employee ID: ${employeeId}`);
+      console.log(`Attempting to login with username: ${username}`);
       
       const { data, error } = await supabase.functions.invoke('employee-auth', {
-        body: { action: 'login', employeeId, password }
+        body: { action: 'login', username, password }
       });
 
       if (error) {
@@ -140,42 +140,6 @@ export const authService = {
         authChangeListeners.splice(index, 1);
       }
     };
-  },
-  
-  // Seed the database with sample employees (development only)
-  seedEmployees: async (): Promise<AuthResult> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('employee-auth', {
-        body: { action: 'seed' }
-      });
-      
-      if (error) {
-        console.error("Seed function error:", error);
-        return { 
-          success: false, 
-          message: `Seeding failed: ${error.message}` 
-        };
-      }
-      
-      if (!data || data.status === 'error') {
-        console.error("Seed error:", data?.error || "Unknown error");
-        return { 
-          success: false, 
-          message: data?.error || "Seeding failed" 
-        };
-      }
-      
-      return { 
-        success: true, 
-        message: data.message || "Database seeded successfully" 
-      };
-    } catch (error) {
-      console.error("Seed exception:", error);
-      return { 
-        success: false, 
-        message: error instanceof Error ? error.message : "Unknown error occurred" 
-      };
-    }
   },
   
   // Check if user is authenticated

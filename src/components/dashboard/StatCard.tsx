@@ -15,7 +15,7 @@ interface StatCardProps {
 export function StatCard({ title, value, icon, change, className }: StatCardProps) {
   return (
     <div className={cn(
-      "bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]",
+      "rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md border border-gray-100 dark:border-gray-700",
       className
     )}>
       <div className="flex justify-between items-start">
@@ -31,20 +31,17 @@ export function StatCard({ title, value, icon, change, className }: StatCardProp
               <div
                 className={cn(
                   "flex items-center text-sm",
-                  change.isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                  change.isPositive ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
                 )}
               >
                 <span>
                   {change.isPositive ? "↑" : "↓"} {change.value}
                 </span>
               </div>
-              <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                from last month
-              </span>
             </div>
           )}
         </div>
-        <div className="bg-pharma-50 dark:bg-gray-700 p-3 rounded-lg">
+        <div className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm">
           {icon}
         </div>
       </div>

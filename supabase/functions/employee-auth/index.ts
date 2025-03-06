@@ -33,8 +33,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { action, employeeId, password } = await req.json();
-    console.log(`Auth action: ${action} for employee ID: ${employeeId}`);
+    const { action, username, password, employeeId } = await req.json();
+    console.log(`Auth action: ${action}`);
 
     // For debug: check if employees table exists and has data
     const { count, error: countError } = await supabaseClient
@@ -50,43 +50,44 @@ serve(async (req) => {
     // Login action
     if (action === 'login') {
       // Get employee from database
-      const { data: employee, error: employeeError } = await supabaseClient
+      const { data: employees, error: employeeError } = await supabaseClient
         .from('employees')
         .select('*')
-        .eq('id', employeeId)
-        .single();
+        .eq('username', username)
+        .limit(1);
 
       if (employeeError) {
         console.error('Employee lookup error:', employeeError);
         return new Response(
           JSON.stringify({ 
-            error: 'Employee not found', 
+            error: 'Error looking up employee', 
             details: employeeError.message,
             status: 'error'
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
         );
       }
 
-      if (!employee) {
-        console.error('No employee found with ID:', employeeId);
+      if (!employees || employees.length === 0) {
+        console.error('No employee found with username:', username);
         return new Response(
           JSON.stringify({ 
-            error: 'Invalid employee ID', 
+            error: 'Invalid username or password', 
             status: 'error'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
         );
       }
 
+      const employee = employees[0];
       console.log(`Found employee: ${employee.name}, verifying password`);
       
       // Verify password (in production, use proper password hashing)
-      if (employee.password_hash !== password) {
+      if (employee.password !== password) {
         console.log('Password verification failed');
         return new Response(
           JSON.stringify({ 
-            error: 'Invalid password', 
+            error: 'Invalid username or password', 
             status: 'error'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
@@ -98,14 +99,14 @@ serve(async (req) => {
       await supabaseClient
         .from('employees')
         .update({ last_login: new Date().toISOString() })
-        .eq('id', employeeId);
+        .eq('id', employee.id);
 
       // Log the login activity
       try {
         await supabaseClient
           .from('activity_logs')
           .insert({
-            employee_id: employeeId,
+            employee_id: employee.id,
             action: 'User logged in'
           });
         console.log('Activity log created for login');
@@ -149,76 +150,6 @@ serve(async (req) => {
         JSON.stringify({ 
           status: 'success',
           message: 'Logged out successfully'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    // Seed action - for development only
-    else if (action === 'seed') {
-      console.log("Seeding employees table with sample data");
-      
-      // Check if employees already exist
-      const { count: existingCount } = await supabaseClient
-        .from('employees')
-        .select('*', { count: 'exact', head: true });
-        
-      if (existingCount && existingCount > 0) {
-        console.log(`Found ${existingCount} existing employees, skipping seed`);
-        return new Response(
-          JSON.stringify({ 
-            status: 'success',
-            message: 'Employees already exist, skipping seed'
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      // Sample employee data
-      const sampleEmployees = [
-        {
-          id: '1001',
-          name: 'Admin User',
-          email: 'admin@pharmasync.com',
-          password_hash: 'admin123',
-          role: 'admin'
-        },
-        {
-          id: '1002',
-          name: 'Sales Representative',
-          email: 'sales@pharmasync.com',
-          password_hash: 'sales123',
-          role: 'sales_rep'
-        },
-        {
-          id: '1003',
-          name: 'Manager User',
-          email: 'manager@pharmasync.com',
-          password_hash: 'manager123',
-          role: 'manager'
-        }
-      ];
-      
-      const { error: seedError } = await supabaseClient
-        .from('employees')
-        .insert(sampleEmployees);
-        
-      if (seedError) {
-        console.error('Error seeding employees:', seedError);
-        return new Response(
-          JSON.stringify({ 
-            error: 'Failed to seed employees', 
-            details: seedError.message,
-            status: 'error'
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-      
-      console.log('Successfully seeded employees table');
-      return new Response(
-        JSON.stringify({ 
-          status: 'success',
-          message: 'Employees table seeded successfully'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

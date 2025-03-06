@@ -9,8 +9,8 @@ const Login = () => {
       <Container className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <Link to="/" className="inline-block">
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pharma-700 to-pharma-500">
-              PharmaSync
+            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+              Pavittar Pharma CRM
             </h2>
           </Link>
         </div>
@@ -22,7 +22,7 @@ const Login = () => {
         <div className="mt-8 text-center">
           <Link
             to="/"
-            className="text-sm font-medium text-pharma-600 hover:text-pharma-500 dark:text-pharma-400 dark:hover:text-pharma-300"
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             &larr; Back to Home
           </Link>
