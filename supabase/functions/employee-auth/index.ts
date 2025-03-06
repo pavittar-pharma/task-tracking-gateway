@@ -22,7 +22,10 @@ serve(async (req) => {
     if (!supabaseUrl || !supabaseAnonKey) {
       console.error("Missing Supabase configuration");
       return new Response(
-        JSON.stringify({ error: "Server configuration error" }),
+        JSON.stringify({ 
+          status: 'error',
+          error: "Server configuration error" 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
@@ -49,6 +52,8 @@ serve(async (req) => {
 
     // Login action
     if (action === 'login') {
+      console.log(`Attempting login for username: ${username}`);
+      
       // Get employee from database
       const { data: employees, error: employeeError } = await supabaseClient
         .from('employees')
@@ -60,9 +65,9 @@ serve(async (req) => {
         console.error('Employee lookup error:', employeeError);
         return new Response(
           JSON.stringify({ 
+            status: 'error',
             error: 'Error looking up employee', 
-            details: employeeError.message,
-            status: 'error'
+            details: employeeError.message
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
         );
@@ -72,10 +77,10 @@ serve(async (req) => {
         console.error('No employee found with username:', username);
         return new Response(
           JSON.stringify({ 
-            error: 'Invalid username or password', 
-            status: 'error'
+            status: 'error',
+            error: 'Invalid username or password'
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
         );
       }
 
@@ -87,8 +92,8 @@ serve(async (req) => {
         console.log('Password verification failed');
         return new Response(
           JSON.stringify({ 
-            error: 'Invalid username or password', 
-            status: 'error'
+            status: 'error',
+            error: 'Invalid username or password'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
         );
@@ -157,8 +162,8 @@ serve(async (req) => {
     else {
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid action', 
-          status: 'error'
+          status: 'error',
+          error: 'Invalid action'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
@@ -167,8 +172,8 @@ serve(async (req) => {
     console.error('Unhandled error in auth function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error'
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );

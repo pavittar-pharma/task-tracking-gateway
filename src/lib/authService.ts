@@ -1,188 +1,88 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Employee, UserRole } from "./types";
 
-// Interface for authentication results
-interface AuthResult {
-  success: boolean;
-  message?: string;
-  employee?: Employee;
+export interface Employee {
+  id: string;
+  name: string;
+  email?: string;
+  role: 'admin' | 'sales_rep' | 'manager';
 }
 
-// Store the current user in session storage and memory
-let currentUser: Employee | null = null;
+interface AuthResponse {
+  status: 'success' | 'error';
+  employee?: Employee;
+  error?: string;
+}
 
-// Event listeners for auth state changes
-type AuthChangeListener = (employee: Employee | null) => void;
-const authChangeListeners: AuthChangeListener[] = [];
+// Store the employee in localStorage
+const EMPLOYEE_STORAGE_KEY = 'pavittar_pharma_employee';
 
-// Auth service for our CRM
 export const authService = {
-  // Login with username and password
-  login: async (username: string, password: string): Promise<AuthResult> => {
+  async login(username: string, password: string): Promise<AuthResponse> {
     try {
-      console.log(`Attempting to login with username: ${username}`);
+      console.log('Calling employee-auth function with username:', username);
       
       const { data, error } = await supabase.functions.invoke('employee-auth', {
         body: { action: 'login', username, password }
       });
-
+      
+      console.log('Auth function response:', data, error);
+      
       if (error) {
-        console.error("Supabase function error:", error);
-        return { 
-          success: false, 
-          message: `Authentication failed: ${error.message}` 
-        };
+        console.error('Error calling auth function:', error);
+        return { status: 'error', error: error.message };
       }
-
-      if (!data || data.status === 'error') {
-        console.error("Auth error:", data?.error || "Unknown error");
-        return { 
-          success: false, 
-          message: data?.error || "Authentication failed" 
-        };
+      
+      if (data.status === 'success' && data.employee) {
+        // Store employee data in localStorage
+        localStorage.setItem(EMPLOYEE_STORAGE_KEY, JSON.stringify(data.employee));
+        return data as AuthResponse;
+      } else {
+        console.error('Auth function returned error:', data);
+        return { status: 'error', error: data.error || 'Authentication failed' };
       }
-
-      const employee = data.employee as Employee;
-      console.log("Login successful, employee data:", employee);
-      
-      // Store in session and memory
-      sessionStorage.setItem('currentUser', JSON.stringify(employee));
-      currentUser = employee;
-      
-      // Notify listeners
-      notifyAuthChangeListeners(employee);
-      
-      return { 
-        success: true, 
-        employee 
-      };
     } catch (error) {
-      console.error("Login exception:", error);
+      console.error('Login error:', error);
       return { 
-        success: false, 
-        message: error instanceof Error ? error.message : "Unknown error occurred" 
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error during login'
       };
     }
   },
   
-  // Logout current user
-  logout: async (): Promise<AuthResult> => {
+  logout(): void {
+    // Call the logout endpoint (async, but we don't need to wait)
+    const employee = this.getCurrentEmployee();
+    if (employee) {
+      supabase.functions.invoke('employee-auth', {
+        body: { action: 'logout', employeeId: employee.id }
+      }).catch(error => {
+        console.error('Error logging out:', error);
+      });
+    }
+    
+    // Clear local storage
+    localStorage.removeItem(EMPLOYEE_STORAGE_KEY);
+  },
+  
+  getCurrentEmployee(): Employee | null {
+    const employeeData = localStorage.getItem(EMPLOYEE_STORAGE_KEY);
+    if (!employeeData) return null;
+    
     try {
-      const employeeId = currentUser?.id;
-      
-      if (employeeId) {
-        // Call logout function to log activity
-        await supabase.functions.invoke('employee-auth', {
-          body: { action: 'logout', employeeId }
-        });
-      }
-      
-      // Clear session and memory regardless of API result
-      sessionStorage.removeItem('currentUser');
-      currentUser = null;
-      
-      // Notify listeners
-      notifyAuthChangeListeners(null);
-      
-      return { success: true };
+      return JSON.parse(employeeData) as Employee;
     } catch (error) {
-      console.error("Logout exception:", error);
-      // Still clear local session even if API call fails
-      sessionStorage.removeItem('currentUser');
-      currentUser = null;
-      notifyAuthChangeListeners(null);
-      
-      return { 
-        success: true, 
-        message: "Logged out locally but server sync failed" 
-      };
+      console.error('Error parsing employee data:', error);
+      return null;
     }
   },
   
-  // Get current logged in user
-  getCurrentUser: (): Employee | null => {
-    if (currentUser) return currentUser;
-    
-    const userJson = sessionStorage.getItem('currentUser');
-    if (userJson) {
-      try {
-        currentUser = JSON.parse(userJson);
-        return currentUser;
-      } catch (e) {
-        console.error("Error parsing user from session storage:", e);
-        return null;
-      }
-    }
-    
-    return null;
+  isAuthenticated(): boolean {
+    return this.getCurrentEmployee() !== null;
   },
   
-  // Initialize auth state from session storage
-  initialize: (): void => {
-    const user = authService.getCurrentUser();
-    if (user) {
-      notifyAuthChangeListeners(user);
-    }
-  },
-  
-  // Subscribe to auth state changes
-  onAuthStateChange: (callback: AuthChangeListener): (() => void) => {
-    authChangeListeners.push(callback);
-    
-    // Immediately call with current state
-    callback(authService.getCurrentUser());
-    
-    // Return unsubscribe function
-    return () => {
-      const index = authChangeListeners.indexOf(callback);
-      if (index > -1) {
-        authChangeListeners.splice(index, 1);
-      }
-    };
-  },
-  
-  // Check if user is authenticated
-  isAuthenticated: (): boolean => {
-    return authService.getCurrentUser() !== null;
-  },
-  
-  // Check if user has specific role
-  hasRole: (role: UserRole): boolean => {
-    const user = authService.getCurrentUser();
-    return user !== null && user.role === role;
-  },
-  
-  // Check if user is admin
-  isAdmin: (): boolean => {
-    return authService.hasRole("admin");
-  },
-  
-  // Check if user can access specific feature based on role
-  canAccess: (feature: string): boolean => {
-    const user = authService.getCurrentUser();
-    if (!user) return false;
-    
-    switch (feature) {
-      case "employees":
-        return user.role === "admin";
-      case "customers":
-        return true; // All roles can access customers
-      case "orders":
-        return true; // All roles can access orders
-      case "inventory":
-        return user.role === "admin" || user.role === "manager";
-      case "tasks":
-        return true; // All roles can access tasks
-      default:
-        return false;
-    }
+  hasRole(role: 'admin' | 'sales_rep' | 'manager'): boolean {
+    const employee = this.getCurrentEmployee();
+    return employee !== null && employee.role === role;
   }
 };
-
-// Helper function to notify all listeners of auth state changes
-function notifyAuthChangeListeners(user: Employee | null): void {
-  for (const listener of authChangeListeners) {
-    listener(user);
-  }
-}

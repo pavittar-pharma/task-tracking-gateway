@@ -92,8 +92,9 @@ export type Database = {
           id: string
           last_login: string | null
           name: string
-          password_hash: string
+          password: string
           role: Database["public"]["Enums"]["user_role"]
+          username: string
         }
         Insert: {
           created_at?: string
@@ -101,8 +102,9 @@ export type Database = {
           id?: string
           last_login?: string | null
           name: string
-          password_hash: string
+          password: string
           role?: Database["public"]["Enums"]["user_role"]
+          username: string
         }
         Update: {
           created_at?: string
@@ -110,8 +112,9 @@ export type Database = {
           id?: string
           last_login?: string | null
           name?: string
-          password_hash?: string
+          password?: string
           role?: Database["public"]["Enums"]["user_role"]
+          username?: string
         }
         Relationships: []
       }

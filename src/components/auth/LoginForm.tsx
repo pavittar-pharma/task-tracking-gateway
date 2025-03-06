@@ -14,7 +14,6 @@ export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   
-  // Check if already logged in
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -28,11 +27,11 @@ export function LoginForm() {
     try {
       const result = await authService.login(username, password);
       
-      if (result.success && result.employee) {
+      if (result.status === 'success' && result.employee) {
         toast.success(`Welcome, ${result.employee.name}!`);
         navigate("/dashboard");
       } else {
-        toast.error(result.message || "Invalid credentials");
+        toast.error(result.error || "Invalid credentials");
         setPassword("");
       }
     } catch (error) {
@@ -44,7 +43,7 @@ export function LoginForm() {
   };
   
   return (
-    <div className="mx-auto w-full max-w-md space-y-8 glass-panel p-8">
+    <div className="mx-auto w-full max-w-md space-y-8 glass-panel p-8 bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
           Sign in to Pavittar Pharma CRM
